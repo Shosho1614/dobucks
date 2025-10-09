@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dobucks — Water Sort Puzzle</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+/* أنماط CSS تبقى كما هي بدون تغيير */
+:root{
+  --tube-width:45.9px; --tube-height:137.7px; --liquid-height:27.54px;
+  --tube-border:#0f3460; --bg1:#0c0a1f; --bg2:#1a1738; --bg3:#141229;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Segoe UI, Tahoma, Arial;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));}
+button{cursor:pointer;border:none;border-radius:999px;padding:8px 14px;font-weight:700;transition:all .2s;background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;}
+button:hover:not(:disabled){transform:scale(1.05);}
+button:disabled{background:#555;cursor:not-allowed;}
+h2,h3{margin-bottom:10px;text-align:center;}
+
+.screen{width:100%;max-width:500px;margin-top:40px;padding:20px;background:rgba(255,255,255,0.1);border-radius:12px;display:none;flex-direction:column;align-items:center;gap:12px;color:#fff;}
+.screen.active{display:flex;}
+input{width:90%;padding:10px;border-radius:8px;border:none;font-size:1rem;margin-bottom:8px;background:rgba(255,255,255,0.9);}
+
+#game-wrap{width:100%;max-width:1100px;display:none;flex-direction:column;align-items:center;}
+
+.game-info{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.15);padding:13.8px; border-radius:11.5px; margin-bottom:20.7px; width:90%;color:#fff; transform: scale(1.15); transform-origin: top center;}
+.stats{display:flex;gap:20.7px; align-items:center;}
+.stat-value{font-size:1.84rem; color:#4cc9f0;font-weight:700;}
+.stat-label{font-size:1.035rem; color:#cbd5e1;}
+.controls{display:flex;gap:11.5px; font-size: 1rem; flex-wrap: nowrap;}
+.game-area{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.1), transparent);border-radius:12px;}
+.tube{width:var(--tube-width);height:var(--tube-height);background:rgba(255,255,255,0.15);border:3px solid var(--tube-border);border-top:none;border-radius:0 0 18px 18px;position:relative;display:flex;flex-direction:column-reverse;overflow:hidden;cursor:pointer;transition:transform .18s, box-shadow .18s, background .18s;box-shadow: inset 0 -4px 10px rgba(0,0,0,0.3);}
+.tube:hover{transform:translateY(-6px);box-shadow:0 6px 28px rgba(76,201,240,0.25);}
+.tube.selected{transform:translateY(-12px);box-shadow:0 8px 32px rgba(76,201,240,0.45);}
+.liquid{height:var(--liquid-height);width:100%;transition:height .28s,opacity .28s;border-radius:0;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;}
+.hidden-liquid{background-color:#000!important;color:white;}
+.message{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(2,6,23,0.9);padding:20px;border-radius:12px;display:none;flex-direction:column;align-items:center;gap:10px;color:#fff;}
+
+#main-screen .main-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+}
+
+#main-screen .main-buttons button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+}
+
+.back-to-main-btn {
+  background: linear-gradient(135deg, #f72585, #b5179e) !important;
+  margin-left: 0;
+}
+
+#notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    background-color: #333;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 9999;
+    min-width: 270px;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Arial;
+    font-size: 15px;
+    transition: all 0.4s ease;
+}
+
+/* أنماط التحقق من الإنترنت */
+#internet-check {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+#internet-check h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #ff6b6b;
+}
+
+#internet-check p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    max-width: 500px;
+}
+
+#internet-check button {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+.referral-system-container {
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 12px;
+  margin: 15px 0;
+  width: 100%;
+  color: #fff;
+}
+
+.referral-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.referral-link-container {
+  margin: 15px 0;
+}
+
+.referral-link {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: none;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.withdrawal-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.withdrawal-method {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  width: 140px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #fff;
+}
+
+.withdrawal-method:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-5px);
+}
+
+.withdrawal-method.selected {
+  background: rgba(76, 201, 240, 0.2);
+  border: 2px solid #4cc9f0;
+}
+
+.withdrawal-form {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.withdrawal-form input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.withdrawal-conditions {
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+  text-align: center;
+  color: #fff;
+}
+
+.withdrawal-conditions ul {
+  text-align: right;
+  margin: 10px 0;
+  padding-right: 20px;
+}
+
+.withdrawal-conditions li {
+  margin-bottom: 8px;
+}
+
+.status-box {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  color: #fff;
+}
+
+.table-container {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 10px;
+  width: 100%;
+  color: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+table th, table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+table th {
+  background: rgba(15, 52, 96, 0.5);
+  color: white;
+}
+
+.alert {
+  background: rgba(255, 234, 167, 0.2);
+  color: #f1c40f;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px 0;
+  text-align: center;
+  display: none;
+  width: 100%;
+}
+
+.msg {
+  text-align:center;
+  margin-top:10px;
+  font-weight:bold;
+  width: 100%;
+  color: #fff;
+}
+
+.withdrawal-quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.withdrawal-quick-btn {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  width: 140px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  color: white;
+  font-weight: bold;
+}
+
+.withdrawal-quick-btn:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-3px);
+}
+
+.custom-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.custom-prompt-content {
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  padding: 25px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+  color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.custom-prompt h3 {
+  margin-bottom: 15px;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.custom-prompt input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 1rem;
+}
+
+.custom-prompt input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.custom-prompt-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.custom-prompt-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 100px;
+}
+
+.custom-prompt-cancel {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.custom-prompt-cancel:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.custom-prompt-ok {
+  background: linear-gradient(135deg, #4cc9f0, #4361ee);
+  color: white;
+}
+
+.custom-prompt-ok:hover {
+  background: linear-gradient(135deg, #3aa8d0, #3250d4);
+  transform: translateY(-2px);
+}
+
+.referral-item {
+  background: rgba(255,255,255,0.1);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+  color: #fff;
+}
+
+.referral-item:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateX(5px);
+}
+
+.referral-code-display {
+  font-family: monospace;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  color: #4cc9f0;
+}
+
+.referral-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin: 15px 0;
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 10px;
+  color: #fff;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 10px;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #4cc9f0;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+}
+
+#main-container {
+  transform: scale(0.95);
+  transform-origin: top center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@media (max-width:700px){
+  :root{--tube-width:38.25px;--tube-height:114.75px;--liquid-height:22.95px;}
+  .controls {
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+  .back-to-main-btn {
+    margin-left: 0;
+    margin-top: 0;
+  }
+  #notification {
+    min-width: 250px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  .withdrawal-method, .withdrawal-quick-btn {
+    width: 120px;
+  }
+  .referral-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .custom-prompt-content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .game-info {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  #internet-check h2 {
+    font-size: 1.5rem;
+  }
+  
+  #internet-check p {
+    font-size: 1rem;
+  }
+}
+
+/* إضافة أنماط الإشعارات */
+.notif {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  z-index: 9999;
+  font-size: 14px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.notif.success { background: #4caf50; }
+.notif.error { background: #f44336; }
+.notif.info { background: #2196f3; }
+</style>
+</head>
+<body>
+<!-- ======== شاشة التحقق من الإنترنت ======== -->
+<div id="internet-check">
+  <h2>⚠️ مشكلة في الاتصال بالإنترنت</h2>
+  <p>تحتاج إلى اتصال بالإنترنت لتشغيل اللعبة. يرجى التحقق من اتصالك وإعادة المحاولة.</p>
+  <button id="retry-connection">إعادة المحاولة</button>
+</div>
+
+<!-- إضافة الحاوية الرئيسية لتطبيق التصغير -->
+<div id="main-container">
+<!-- ======== إشعارات احترافية ======== -->
+<div id="notification"></div>
+
+<!-- نافذة الإدخال المحسنة -->
+<div id="custom-prompt" class="custom-prompt">
+  <div class="custom-prompt-content">
+    <h3 id="prompt-title">أدخل المعلومات المطلوبة</h3>
+    <input type="text" id="prompt-input" placeholder="أدخل المعلومات هنا">
+    <div class="custom-prompt-buttons">
+      <button id="prompt-cancel" class="custom-prompt-btn custom-prompt-cancel">إلغاء</button>
+      <button id="prompt-ok" class="custom-prompt-btn custom-prompt-ok">حسناً</button>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة البداية للعبة -->
+<div class="screen active" id="main-screen">
+  <h2>🎮 Dobucks</h2>
+  <div class="main-buttons">
+    <button id="start-game">ابدأ اللعبة</button>
+    <button id="referral-btn">نظام الإحالة</button>
+    <button id="withdraw-btn">سحب الرصيد</button>
+    <button id="referral-system-btn">إنشاء رابط إحالة</button>
+  </div>
+  
+  <!-- إضافة عرض النقاط في الشاشة الرئيسية -->
+  <div class="status-box">
+    <h3>رصيدك الحالي</h3>
+    <div class="stat-value" id="main-screen-balance">0</div>
+    <div class="stat-label">نقطة</div>
+  </div>
+</div>
+
+<!-- ===================== نظام الإحالة ===================== -->
+
+<!-- شاشة نظام الإحالة -->
+<div class="screen" id="referral-screen">
+  <h2>نظام الإحالة</h2>
+  <p>شارك رابط الإحالة الخاص بك مع أصدقائك، واحصل على <strong>50 نقطة</strong> عن كل صديق يستخدمه 🎁</p>
+  
+  <div class="referral-stats">
+    <div class="stat-card">
+      <div class="stat-number" id="total-referrals">0</div>
+      <div class="stat-label">إجمالي الإحالات</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="referral-bonus">0</div>
+      <div class="stat-label">النقاط المكتسبة</div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px; width:100%;">
+    <h3>الإحالات الناجحة</h3>
+    <div id="referrals-list" style="max-height: 200px; overflow-y: auto;">
+      <div class="referral-item">
+        <span>لا توجد إحالات حتى الآن</span>
+      </div>
+    </div>
+  </div>
+
+  <button id="back-to-main">العودة</button>
+</div>
+
+<!-- شاشة إنشاء رابط الإحالة -->
+<div class="screen" id="referral-system-screen">
+  <h2>إنشاء رابط إحالة 🔗</h2>
+  
+  <div class="referral-system-container">
+    <div id="userSection">
+      <div class="referral-input-group">
+        <input type="text" id="ref-name" placeholder="اسمك">
+        <input type="email" id="ref-email" placeholder="بريدك الإلكتروني">
+        <button onclick="createReferralLink()">توليد رابط إحالة</button>
+      </div>
+    </div>
+
+    <div id="refSection" style="display:none;">
+      <p>رابط الإحالة الخاص بك:</p>
+      <div class="referral-link-container">
+        <textarea id="refLink" class="referral-link" readonly></textarea>
+      </div>
+      <button onclick="copyReferralLink()">📋 نسخ الرابط</button>
+    </div>
+
+    <div id="refResult" style="display:none;">
+      <h3>🎁 تم تسجيل إحالتك بنجاح!</h3>
+    </div>
+  </div>
+
+  <button id="back-to-main-from-referral">العودة</button>
+</div>
+
+<!-- شاشة سحب الرصيد المحسنة -->
+<div class="screen" id="withdrawal-screen">
+  <h2>سحب الرصيد 💰</h2>
+  
+  <div class="withdrawal-conditions">
+    <h3>شروط السحب:</h3>
+    <ul>
+      <li>رصيد لا يقل عن 2000 نقطة</li>
+      <li>3 إحالات ناجحة على الأقل</li>
+      <li>الوصول للمستوى 50 كحد أدنى</li>
+      <li>عدم وجود طلبات سحب معلقة</li>
+    </ul>
+    <p>رصيدك الحالي: <span id="current-balance">0</span> نقطة</p>
+    <p>عدد إحالاتك الناجحة: <span id="referrals-count">0</span></p>
+    <p>المستوى الحالي: <span id="current-level">1</span></p>
+  </div>
+  
+  <!-- أزرار سريعة للسحب - مع إضافة بايير و باينانس -->
+  <div class="withdrawal-quick-buttons">
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('فودافون كاش', 20)">فودافون كاش</button>
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('اتصالات كاش', 20)">اتصالات كاش</button>
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('أورانج كاش', 20)">أورانج كاش</button>
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('وي باي', 20)">وي باي</button>
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('بايير', 20)">بايير</button>
+    <button class="withdrawal-quick-btn" onclick="requestQuickWithdrawal('باينانس', 20)">باينانس</button>
+  </div>
+  
+  <p id="msg" class="msg"></p>
+  
+  <!-- حالة السحب -->
+  <div id="withdraw-status" class="status-box">
+    📭 لا يوجد طلبات سحب حتى الآن.
+  </div>
+  
+  <!-- سجل السحوبات -->
+  <div id="withdraw-history" class="table-container" style="display:none;">
+    <h3 style="text-align:center; color:#4cc9f0;">📜 سجل طلبات السحب السابقة</h3>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>المبلغ</th>
+          <th>الطريقة</th>
+          <th>التاريخ</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  
+  <div id="alert-box" class="alert"></div>
+  
+  <!-- تم إزالة قسم withdrawal-methods و withdrawal-form -->
+  
+  <button id="back-to-main-from-withdrawal">العودة</button>
+</div>
+
+<!-- شاشة اللعبة -->
+<div id="game-wrap">
+  <div class="game-info">
+    <div class="stats">
+      <div><div class="stat-value" id="level">1</div><div class="stat-label">المستوى</div></div>
+      <div><div class="stat-value" id="points">0</div><div class="stat-label">النقاط</div></div>
+    </div>
+    <div class="controls">
+      <button id="undo-btn" disabled>↶ تراجع</button>
+      <button id="restart-btn">↻ إعادة</button>
+      <!-- زر العودة إلى الشاشة الرئيسية -->
+      <button id="back-to-main-from-game" class="back-to-main-btn">🏠 الرئيسية</button>
+    </div>
+  </div>
+  <div class="game-area" id="game-area"></div>
+</div>
+
+<!-- رسالة الفوز -->
+<div class="message" id="win-message">
+  <h3>🎉 أحسنت! انتهى المستوى</h3>
+  <p id="win-stats"></p>
+  <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+    <button id="continue-btn">المستوى التالي</button>
+    <button id="close-win">إغلاق</button>
+  </div>
+</div>
+</div> <!-- نهاية الحاوية الرئيسية -->
+
+<script>
+// ========= إعدادات Baserow =========
+const BASEROW_API_TOKEN = "yiLf7FjjfI0xxwocyQgpYL77ASbuXSeI";
+const BASEROW_USERS_URL = "https://api.baserow.io/api/database/rows/table/692997/"; // جدول المستخدمين
+
+// ======== إعدادات Baserow الأخرى ========
+const BASEROW_API_URL = "https://api.baserow.io/api/database/rows/table/693348";
+const BASEROW_REFERRAL_URL = "https://api.baserow.io/api/database/rows/table/693464/"; // جدول الإحالات
+const BASEROW_WITHDRAW_URL = "https://api.baserow.io/api/database/rows/table/693458/";
+
+// ======== إعدادات EmailJS ========
+emailjs.init("G6hrIA85mOgaFmKrr");
+const SERVICE_ID = "service_dobucks";
+const TEMPLATE_ID = "template_lhlxcjf";
+
+// ====== إعدادات EmailJS للسحب ======
+const EMAILJS_SERVICE_ID = "service_dobucks";
+const EMAILJS_TEMPLATE_ID = "template_withdraw";
+
+// ======== بيانات المستخدم واللعبة ========
+let currentUser = null;
+let gameProgress = {
+  level: 1,
+  balance: 0,
+  totalPoints: 0
+};
+
+// ======== إعدادات اللعبة ========
+const COLORS = ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#9400D3','#FF1493','#00FFFF','#FFD700','#FF69B4','#32CD32'];
+const MAX_DAILY_POINTS = 80;
+const REFERRAL_BONUS = 50;
+const GAME_NAME = "Water Sort Puzzle";
+const MAX_REFERRALS_PER_DAY = 5;
+const WITHDRAW_FEE = 2;
+const TODAY = new Date().toISOString().split("T")[0];
+const MIN_WITHDRAW_POINTS = 2000;
+
+// ======== متغيرات اللعبة ========
+let dailyPoints = 0;
+let gameHistory = [];
+let lastKnownStatus = "";
+
+// حالة اللعبة
+const gameState = {
+  level: 1,
+  moves: 0,
+  tubes: [],
+  selectedTube: null,
+  history: [],
+  isAnimating: false
+};
+
+// ========= حفظ واسترجاع البيانات محليًا =========
+function saveUserLocal(user) {
+  localStorage.setItem("dobucks_user", JSON.stringify(user));
+}
+
+function loadUserLocal() {
+  return JSON.parse(localStorage.getItem("dobucks_user")) || null;
+}
+
+// ========= حفظ البيانات في Baserow =========
+async function saveUserToBaserow(user) {
+  try {
+    // البحث عن المستخدم أولًا
+    const response = await fetch(`${BASEROW_USERS_URL}?user_email=${encodeURIComponent(user.email)}`, {
+      headers: { "Authorization": `Token ${BASEROW_API_TOKEN}` }
+    });
+    const data = await response.json();
+
+    // لو المستخدم موجود، نحدث بياناته
+    if (data?.results?.length > 0) {
+      const existing = data.results[0];
+      await fetch(`${BASEROW_USERS_URL}${existing.id}/`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Token ${BASEROW_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          level: user.level,
+          points: user.points,
+          referrals: user.referrals,
+          balance: user.balance,
+          last_update: new Date().toISOString()
+        })
+      });
+    } else {
+      // لو مش موجود، نضيفه جديد
+      await fetch(BASEROW_USERS_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": `Token ${BASEROW_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_email: user.email,
+          username: user.name,
+          level: user.level,
+          points: user.points,
+          referrals: user.referrals,
+          balance: user.balance,
+          last_update: new Date().toISOString()
+        })
+      });
+    }
+  } catch (err) {
+    console.error("❌ خطأ أثناء الحفظ في Baserow:", err);
+  }
+}
+
+// ========= تحميل المستخدم من Baserow =========
+async function loadUserFromBaserow(email) {
+  try {
+    const response = await fetch(`${BASEROW_USERS_URL}?user_email=${encodeURIComponent(email)}`, {
+      headers: { "Authorization": `Token ${BASEROW_API_TOKEN}` }
+    });
+    const data = await response.json();
+    if (data?.results?.length > 0) return data.results[0];
+  } catch (err) {
+    console.error("⚠️ خطأ أثناء تحميل المستخدم من Baserow:", err);
+  }
+  return null;
+}
+
+// ========= إضافة نقاط عند اجتياز مستوى =========
+function addPointsForLevelCompletion() {
+  let user = loadUserLocal();
+  if (!user) {
+    // إنشاء مستخدم جديد إذا لم يكن موجودًا
+    user = {
+      email: "guest_" + Date.now() + "@dobucks.local",
+      name: "ضيف",
+      level: 1,
+      points: 0,
+      referrals: 0,
+      balance: 0,
+      last_update: new Date().toISOString()
+    };
+  }
+
+  // تحديث المستوى والنقاط - إضافة مستوى واحد فقط
+  user.level = (user.level || 1) + 1;
+  user.points = (user.points || 0) + 1;
+  user.balance = (user.balance || 0) + 1;
+  user.last_update = new Date().toISOString();
+
+  saveUserLocal(user);
+  saveUserToBaserow(user);
+  
+  // تحديث المتغيرات العالمية
+  if (currentUser) {
+    currentUser.level = user.level;
+    currentUser.balance = user.balance;
+  }
+  
+  gameState.level = user.level;
+  
+  // تحديث الواجهة
+  updateGameUI();
+  updateLevelAndPoints(user.balance, user.level);
+
+  showNotification(`🎉 اجتزت المستوى ${user.level - 1}! حصلت على نقطة واحدة!`, "success");
+  
+  // حفظ في localStorage بشكل منفصل للتأكد
+  localStorage.setItem("current_level", user.level);
+  localStorage.setItem("user_balance", user.balance);
+}
+
+// ====== التحقق من شروط السحب ======
+function canWithdraw(user) {
+  if (!user) return { ok: false, reason: "يجب تحقق شروط السحب حتى تتمكن من السحب بنجاح" };
+  if ((user.balance || 0) < 2000) return { ok: false, reason: "يجب تحقق شروط السحب حتى تتمكن من السحب بنجاح" };
+  if ((user.referrals || 0) < 3) return { ok: false, reason: "يجب تحقق شروط السحب حتى تتمكن من السحب بنجاح" };
+  if ((user.level || 0) < 50) return { ok: false, reason: "يجب تحقق شروط السحب حتى تتمكن من السحب بنجاح" };
+  if (user.hasPendingWithdrawal) return { ok: false, reason: "يجب تحقق شروط السحب حتى تتمكن من السحب بنجاح" };
+  return { ok: true };
+}
+
+// ====== طلب السحب ======
+async function requestWithdrawal(method, details) {
+  const amount = 2000; // المبلغ المطلوب للسحب
+  const check = canWithdraw(currentUser);
+
+  if (!check.ok) {
+    showNotification(check.reason, "error");
+    return false;
+  }
+
+  try {
+    // خصم الرصيد وتحديث الحالة
+    currentUser.balance -= amount;
+    currentUser.hasPendingWithdrawal = true;
+    saveUserData();
+
+    const withdrawalData = {
+      user_name: currentUser.name || "لاعب غير مسجل",
+      withdrawal_method: method,
+      withdrawal_details: details,
+      amount_requested: amount,
+      status: "قيد المراجعة",
+      date_requested: new Date().toISOString()
+    };
+
+    // حفظ الطلب في Baserow
+    const response = await fetch(BASEROW_WITHDRAW_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Token ${BASEROW_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(withdrawalData)
+    });
+
+    if (!response.ok) throw new Error("Baserow Error");
+
+    // إرسال بريد إلى Gmail بعد النجاح
+    await sendEmailToAdmin(withdrawalData);
+
+    showNotification("✅ تم إرسال طلب السحب بنجاح! سيتم مراجعته خلال 24 ساعة.", "success");
+    return true;
+
+  } catch (err) {
+    console.error("خطأ أثناء السحب:", err);
+    showNotification("⚠️ حدث خطأ أثناء إرسال الطلب.", "error");
+    return false;
+  }
+}
+
+// ====== إرسال البريد إلى Gmail ======
+async function sendEmailToAdmin(data) {
+  try {
+    const params = {
+      to_email: "dobucksapp@gmail.com",
+      subject: `طلب سحب جديد من ${data.user_name}`,
+      message: `
+📩 تفاصيل طلب السحب:
+- الاسم: ${data.user_name}
+- الطريقة: ${data.withdrawal_method}
+- التفاصيل: ${data.withdrawal_details}
+- المبلغ: ${data.amount_requested}
+- التاريخ: ${new Date().toLocaleString()}
+      `
+    };
+
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+    console.log("📧 تم إرسال البريد بنجاح إلى إدارة التطبيق.");
+  } catch (err) {
+    console.error("خطأ أثناء إرسال البريد:", err);
+  }
+}
+
+// ====== معالجة كود الإحالة من الرابط ======
+function handleReferralParameter() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get("ref");
+
+  if (refCode) {
+    showNotification(`🎁 تم تطبيق كود الإحالة بنجاح: ${refCode}`, "success", 4000);
+    applyReferral(refCode);
+  }
+}
+
+// ====== تطبيق الإحالة ======
+async function applyReferral(refCode) {
+  if (localStorage.getItem("referral_used")) return; // منع التكرار
+
+  try {
+    const bonusPoints = 50;
+    let userBalance = parseInt(localStorage.getItem("user_balance") || "0");
+    userBalance += bonusPoints;
+    localStorage.setItem("user_balance", userBalance);
+    localStorage.setItem("referral_used", refCode);
+
+    await fetch(BASEROW_REFERRAL_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Token ${BASEROW_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ref_code: refCode,
+        points_awarded: bonusPoints,
+        date: new Date().toISOString()
+      })
+    });
+
+    showNotification("✅ تمت إضافة نقاط الإحالة بنجاح!", "success");
+    
+    // تحديث النقاط في جميع الشاشات
+    updateLevelAndPoints();
+  } catch (err) {
+    console.error("خطأ أثناء حفظ الإحالة:", err);
+    showNotification("⚠️ حدث خطأ أثناء تسجيل الإحالة", "error");
+  }
+}
+
+// ====== إنشاء رابط الإحالة ======
+function createReferralLink() {
+  const name = document.getElementById("ref-name").value.trim();
+  const email = document.getElementById("ref-email").value.trim();
+
+  if (!name || !email) {
+    showNotification("⚠️ يرجى إدخال الاسم والبريد الإلكتروني", "error");
+    return;
+  }
+
+  const refCode = "DOB-" + name.replace(/\s+/g, "").substring(0, 4).toUpperCase() + Math.floor(Math.random() * 1000);
+  const refLink = `${window.location.origin}?ref=${refCode}`;
+
+  document.getElementById("refLink").value = refLink;
+  document.getElementById("userSection").style.display = "none";
+  document.getElementById("refSection").style.display = "block";
+
+  localStorage.setItem("my_ref_code", refCode);
+
+  fetch(BASEROW_REFERRAL_URL, {
+    method: "POST",
+    headers: {
+      "Authorization": `Token ${BASEROW_API_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      user_name: name,
+      user_email: email,
+      ref_code: refCode,
+      date: new Date().toISOString()
+    })
+  });
+}
+
+// ====== نسخ الرابط ======
+function copyReferralLink() {
+  const refLink = document.getElementById("refLink");
+  refLink.select();
+  document.execCommand("copy");
+  showNotification("📋 تم نسخ رابط الإحالة بنجاح!", "success");
+}
+
+// ============ تحديث النقاط والمستوى عند الفوز ============
+function levelCompleted() {
+  // استدعاء الدالة المحسنة لإضافة النقاط - مرة واحدة فقط
+  addPointsForLevelCompletion();
+}
+
+// ============ تحديث الواجهة في كل الشاشات ============
+function updateLevelAndPoints(balance = null, level = null) {
+  if (balance === null) balance = parseInt(localStorage.getItem("user_balance") || "0");
+  if (level === null) level = parseInt(localStorage.getItem("current_level") || "1");
+
+  console.log("Updating display - Balance:", balance, "Level:", level); // للت Debug
+
+  // تحديث النقاط في واجهة اللعبة
+  const pointsElements = document.querySelectorAll("#points, #main-screen-balance, #current-balance");
+  pointsElements.forEach(el => {
+    if (el) el.textContent = balance;
+  });
+
+  // تحديث المستوى في واجهة اللعبة
+  const levelElements = document.querySelectorAll("#level, #current-level");
+  levelElements.forEach(el => {
+    if (el) el.textContent = level;
+  });
+
+  // تحديث عدد الإحالات إذا كانت الشاشة مفتوحة
+  if (currentUser && currentUser.referrals) {
+    const referralsCount = currentUser.referrals.length;
+    document.getElementById('referrals-count').textContent = referralsCount;
+    document.getElementById('total-referrals').textContent = referralsCount;
+  }
+}
+
+// ======== تحديث عرض النقاط في جميع الشاشات ========
+function updatePointsDisplay() {
+  // استبدلنا هذه الدالة بـ updateLevelAndPoints
+  updateLevelAndPoints();
+}
+
+// ======== التحقق من الإنترنت ========
+function checkInternet() {
+  if (!navigator.onLine) {
+    showInternetError();
+    return false;
+  }
+  return true;
+}
+
+function showInternetError() {
+  document.getElementById('internet-check').style.display = 'flex';
+  document.getElementById('main-container').style.display = 'none';
+}
+
+function hideInternetError() {
+  document.getElementById('internet-check').style.display = 'none';
+  document.getElementById('main-container').style.display = 'flex';
+}
+
+// ======== نافذة الإدخال المحسنة ========
+let promptResolve = null;
+
+function showCustomPrompt(title, placeholder = "أدخل المعلومات هنا") {
+  return new Promise((resolve) => {
+    document.getElementById('prompt-title').textContent = title;
+    document.getElementById('prompt-input').placeholder = placeholder;
+    document.getElementById('prompt-input').value = '';
+    
+    const promptElement = document.getElementById('custom-prompt');
+    promptElement.style.display = 'flex';
+    
+    promptResolve = resolve;
+    
+    setTimeout(() => {
+      document.getElementById('prompt-input').focus();
+    }, 300);
+  });
+}
+
+function closeCustomPrompt() {
+  document.getElementById('custom-prompt').style.display = 'none';
+  promptResolve = null;
+}
+
+// إعداد معالجات الأحداث لنافذة الإدخال
+document.getElementById('prompt-ok').addEventListener('click', () => {
+  const value = document.getElementById('prompt-input').value.trim();
+  if (promptResolve) {
+    promptResolve(value);
+    closeCustomPrompt();
+  }
+});
+
+document.getElementById('prompt-cancel').addEventListener('click', () => {
+  if (promptResolve) {
+    promptResolve(null);
+    closeCustomPrompt();
+  }
+});
+
+document.getElementById('prompt-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('prompt-ok').click();
+  }
+});
+
+document.getElementById('custom-prompt').addEventListener('click', (e) => {
+  if (e.target.id === 'custom-prompt') {
+    if (promptResolve) {
+      promptResolve(null);
+      closeCustomPrompt();
+    }
+  }
+});
+
+// ======== تحميل تقدم المستخدم من LocalStorage ========
+function loadGameProgress() {
+  const saved = localStorage.getItem('dobucks_progress');
+  if (!saved) return false;
+  try {
+    gameProgress = JSON.parse(saved);
+    return true;
+  } catch (e) {
+    console.error("❌ خطأ في تحميل تقدم اللعبة:", e);
+    return false;
+  }
+}
+
+// ======== حفظ تقدم المستخدم ========
+function saveGameProgress() {
+  localStorage.setItem('dobucks_progress', JSON.stringify(gameProgress));
+  syncProgressToBaserow();
+}
+
+// ======== مزامنة تقدم اللعبة مع Baserow ========
+async function syncProgressToBaserow() {
+  if (!currentUser) return;
+
+  const payload = {
+    email: currentUser.email,
+    level: gameProgress.level,
+    balance: gameProgress.balance,
+    totalPoints: gameProgress.totalPoints
+  };
+
+  try {
+    const response = await fetch(BASEROW_API_URL + "?filter__email=" + encodeURIComponent(currentUser.email), {
+      headers: { "Authorization": "Token " + BASEROW_API_TOKEN }
+    });
+    const data = await response.json();
+
+    if (data.results && data.results.length > 0) {
+      const rowId = data.results[0].id;
+      await fetch(BASEROW_API_URL + rowId + "/", {
+        method: "PATCH",
+        headers: {
+          "Authorization": "Token " + BASEROW_API_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await fetch(BASEROW_API_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": "Token " + BASEROW_API_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    console.log("✅ تم مزامنة تقدم اللعبة مع Baserow");
+  } catch (error) {
+    console.error("❌ خطأ في مزامنة تقدم اللعبة:", error);
+  }
+}
+
+// ======== نظام السحب الجديد مع EmailJS ========
+
+// ✅ تحميل حالة آخر طلب + سجل السحوبات
+async function loadWithdrawalStatus(showAlert = false) {
+  const statusBox = document.getElementById("withdraw-status");
+  const historyDiv = document.getElementById("withdraw-history");
+  const historyTable = document.querySelector("#history-table tbody");
+
+  try {
+    statusBox.innerHTML = "📭 لا يوجد طلبات سحب حتى الآن.";
+    historyDiv.style.display = "none";
+    
+  } catch (err) {
+    console.error(err);
+    statusBox.innerHTML = "📭 لا يوجد طلبات سحب حتى الآن.";
+  }
+}
+
+// ✅ إشعار للمستخدم بتحديث الحالة
+function showNotification(text) {
+  const alertBox = document.getElementById("alert-box");
+  alertBox.innerHTML = text;
+  alertBox.style.display = "block";
+  setTimeout(() => alertBox.style.display = "none", 7000);
+}
+
+// ======== سحب سريع مع نافذة الإدخال المحسنة ========
+async function requestQuickWithdrawal(method, amount) {
+  const accountInfo = await showCustomPrompt(`أدخل معلومات ${method} الخاصة بك:`, `معلومات ${method}...`);
+  if (accountInfo) {
+    await requestWithdrawal(method, accountInfo);
+  }
+}
+
+// ======== نظام التخزين المحلي ========
+function loadUserData() {
+  const savedData = localStorage.getItem('dobucks_user');
+  if (!savedData) {
+    // إنشاء مستخدم جديد تلقائياً
+    currentUser = {
+      id: generateUserId(),
+      username: "player_" + Math.floor(Math.random() * 1000),
+      name: "مستخدم",
+      email: "user@example.com",
+      balance: parseInt(localStorage.getItem("user_balance") || "0"),
+      'Referral code': generateReferralCode(),
+      Status: "Active",
+      HasWithdrawnBefore: false,
+      dailyPoints: 0,
+      level: parseInt(localStorage.getItem("current_level") || "1"),
+      tubes: [],
+      referrals: [],
+      withdrawalHistory: [],
+      totalWithdrawals: 0
+    };
+    saveUserData();
+    return true;
+  }
+  
+  try {
+    const data = JSON.parse(savedData);
+    currentUser = {
+      id: data.id || generateUserId(),
+      username: data.username || "player_" + Math.floor(Math.random() * 1000),
+      name: data.name || "مستخدم",
+      email: data.email || "user@example.com",
+      balance: data.balance || parseInt(localStorage.getItem("user_balance") || "0"),
+      'Referral code': data['Referral code'] || generateReferralCode(),
+      Status: data.Status || "Active",
+      HasWithdrawnBefore: data.HasWithdrawnBefore || false,
+      dailyPoints: data.dailyPoints || 0,
+      level: data.level || parseInt(localStorage.getItem("current_level") || "1"),
+      tubes: data.tubes || [],
+      referrals: data.referrals || [],
+      withdrawalHistory: data.withdrawalHistory || [],
+      totalWithdrawals: data.totalWithdrawals || 0
+    };
+    dailyPoints = data.dailyPoints || 0;
+    gameState.level = currentUser.level;
+    gameState.tubes = data.tubes || [];
+    return true;
+  } catch (e) {
+    console.error("خطأ في تحميل بيانات المستخدم:", e);
+    return false;
+  }
+}
+
+// توليد معرف مستخدم فريد
+function generateUserId() {
+  return 'user_' + Math.random().toString(36).substr(2, 9);
+}
+
+// توليد كود إحالة
+function generateReferralCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// حفظ بيانات المستخدم محلياً
+function saveUserData() {
+  if (!currentUser) return;
+  const userData = {
+    id: currentUser.id,
+    username: currentUser.username,
+    name: currentUser.name,
+    email: currentUser.email,
+    balance: currentUser.balance,
+    'Referral code': currentUser['Referral code'],
+    Status: currentUser.Status,
+    HasWithdrawnBefore: currentUser.HasWithdrawnBefore,
+    dailyPoints: dailyPoints,
+    level: currentUser.level,
+    tubes: gameState.tubes,
+    referrals: currentUser.referrals || [],
+    withdrawalHistory: currentUser.withdrawalHistory || [],
+    totalWithdrawals: currentUser.totalWithdrawals || 0
+  };
+  localStorage.setItem('dobucks_user', JSON.stringify(userData));
+  
+  // تحديث gameProgress مع البيانات الحالية
+  gameProgress.level = currentUser.level;
+  gameProgress.balance = currentUser.balance;
+  gameProgress.totalPoints = dailyPoints;
+  saveGameProgress();
+  
+  // تحديث عرض النقاط في جميع الشاشات
+  updateLevelAndPoints();
+}
+
+// ======== إشعارات احترافية ========
+function showNotification(message, type = 'info', duration = 3000) {
+  const notif = document.getElementById('notification');
+  let bgColor;
+
+  switch(type) {
+    case 'success': bgColor = '#4CAF50'; break;
+    case 'error': bgColor = '#E53935'; break;
+    case 'warning': bgColor = '#FFA000'; break;
+    default: bgColor = '#3F51B5';
+  }
+
+  notif.style.backgroundColor = bgColor;
+  notif.innerHTML = message;
+  notif.style.display = 'block';
+  notif.style.opacity = '1';
+
+  setTimeout(() => {
+    notif.style.opacity = '0';
+    setTimeout(() => notif.style.display = 'none', 400);
+  }, duration);
+}
+
+// ======== تطبيق كود الإحالة ========
+function applyReferral(referralCode) {
+  if (!currentUser) {
+    showNotification('⚠️ يجب تسجيل الدخول أولًا قبل استخدام كود إحالة.', 'warning');
+    return;
+  }
+
+  // تحقق من أن المستخدم لا يستخدم كود الإحالة الخاص به
+  if (currentUser['Referral code'] === referralCode) {
+    showNotification('❌ لا يمكنك استخدام كود الإحالة الخاص بك!', 'error');
+    return;
+  }
+
+  // تحقق من أن المستخدم لم يستخدم كود إحالة من قبل
+  if (currentUser.usedReferral) {
+    showNotification('❌ لقد استخدمت كود إحالة من قبل!', 'error');
+    return;
+  }
+
+  // حفظ الإحالة محلياً
+  if (!currentUser.referrals) currentUser.referrals = [];
+  
+  const referralRecord = {
+    code: referralCode,
+    date: TODAY,
+    bonus: REFERRAL_BONUS
+  };
+  
+  currentUser.referrals.push(referralRecord);
+  currentUser.balance += REFERRAL_BONUS;
+  gameProgress.balance += REFERRAL_BONUS;
+  currentUser.usedReferral = true;
+  
+  saveUserData();
+  
+  // تحديث العرض في شاشة السحب إذا كانت مفتوحة
+  if (withdrawalScreen.classList.contains('active')) {
+    updateWithdrawalDisplay();
+  }
+  
+  showNotification('✅ تم تفعيل الإحالة بنجاح! حصلت على 50 نقطة 🎁', 'success');
+}
+
+// ======== تحديث العرض أول بأول في شاشة السحب ========
+function updateWithdrawalDisplay() {
+  if (!currentUser) return;
+  
+  // تحديث الرصيد الحالي - استخدام currentUser.balance مباشرة
+  document.getElementById("current-balance").textContent = currentUser.balance;
+  
+  // تحديث عدد الإحالات
+  const referralsCount = currentUser.referrals ? currentUser.referrals.length : 0;
+  document.getElementById('referrals-count').textContent = referralsCount;
+  
+  // تحديث المستوى الحالي
+  document.getElementById('current-level').textContent = currentUser.level;
+  
+  // تحديث شاشة الإحالة إذا كانت مفتوحة
+  if (referralScreen.classList.contains('active')) {
+    updateReferralDisplay();
+  }
+}
+
+// ======== تحديث العرض في شاشة الإحالة ========
+function updateReferralDisplay() {
+  if (!currentUser) return;
+  
+  const referralsCount = currentUser.referrals ? currentUser.referrals.length : 0;
+  const totalBonus = referralsCount * REFERRAL_BONUS;
+  
+  document.getElementById('total-referrals').textContent = referralsCount;
+  document.getElementById('referral-bonus').textContent = totalBonus;
+  
+  // تحديث قائمة الإحالات
+  if (currentUser.referrals && currentUser.referrals.length > 0) {
+    document.getElementById('referrals-list').innerHTML = currentUser.referrals.map(ref => 
+      `<div class="referral-item">
+        <span>كود: ${ref.code}</span>
+        <span>+${ref.bonus} نقطة</span>
+      </div>`
+    ).join('');
+  }
+}
+
+// ======== عناصر DOM ========
+const mainScreen = document.getElementById('main-screen');
+const referralScreen = document.getElementById('referral-screen');
+const referralSystemScreen = document.getElementById('referral-system-screen');
+const withdrawalScreen = document.getElementById('withdrawal-screen');
+const gameWrap = document.getElementById('game-wrap');
+const gameArea = document.getElementById('game-area');
+const levelEl = document.getElementById('level');
+const pointsEl = document.getElementById('points');
+const undoBtn = document.getElementById('undo-btn');
+const restartBtn = document.getElementById('restart-btn');
+const winMsg = document.getElementById('win-message');
+const winStats = document.getElementById('win-stats');
+const continueBtn = document.getElementById('continue-btn');
+const closeWin = document.getElementById('close-win');
+const startGameBtn = document.getElementById('start-game');
+const referralBtn = document.getElementById('referral-btn');
+const withdrawBtn = document.getElementById('withdraw-btn');
+const backToMainBtn = document.getElementById('back-to-main');
+const userReferralCode = document.getElementById('user-referral-code');
+const referralsList = document.getElementById('referrals-list');
+const backToMainFromGameBtn = document.getElementById('back-to-main-from-game');
+const referralSystemBtn = document.getElementById('referral-system-btn');
+const backToMainFromReferralBtn = document.getElementById('back-to-main-from-referral');
+const backToMainFromWithdrawalBtn = document.getElementById('back-to-main-from-withdrawal');
+const currentBalanceEl = document.getElementById('current-balance');
+const referralsCountEl = document.getElementById('referrals-count');
+const totalReferralsEl = document.getElementById('total-referrals');
+const referralBonusEl = document.getElementById('referral-bonus');
+const internetCheck = document.getElementById('internet-check');
+const retryConnectionBtn = document.getElementById('retry-connection');
+
+// ======== التنقل بين الشاشات ========
+// بدء اللعبة
+startGameBtn.addEventListener('click', () => {
+  if (!checkInternet()) return;
+  
+  mainScreen.classList.remove('active');
+  gameWrap.style.display = 'flex';
+  render();
+});
+
+// نظام الإحالة
+referralBtn.addEventListener('click', showReferralScreen);
+backToMainBtn.addEventListener('click', () => {
+  referralScreen.classList.remove('active');
+  mainScreen.classList.add('active');
+});
+
+// نظام إنشاء رابط الإحالة
+referralSystemBtn.addEventListener('click', () => {
+  if (!checkInternet()) return;
+  
+  mainScreen.classList.remove('active');
+  referralSystemScreen.classList.add('active');
+});
+
+backToMainFromReferralBtn.addEventListener('click', () => {
+  referralSystemScreen.classList.remove('active');
+  mainScreen.classList.add('active');
+});
+
+// نظام سحب الرصيد - تم إصلاحه
+withdrawBtn.addEventListener('click', showWithdrawalScreen);
+backToMainFromWithdrawalBtn.addEventListener('click', () => {
+  withdrawalScreen.classList.remove('active');
+  mainScreen.classList.add('active');
+});
+
+// زر العودة من شاشة اللعبة إلى الشاشة الرئيسية
+backToMainFromGameBtn.addEventListener('click', () => {
+  gameWrap.style.display = 'none';
+  mainScreen.classList.add('active');
+  // حفظ حالة اللعبة قبل الخروج
+  saveUserData();
+});
+
+// ======== منطق اللعبة ========
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function saveHistory() {
+  gameState.history.push({
+    tubes: deepCopy(gameState.tubes),
+    moves: gameState.moves
+  });
+  
+  if (gameState.history.length > 80) {
+    gameState.history.shift();
+  }
+  
+  // حفظ الحالة في سجل الحركات الجديد
+  saveState({
+    tubes: deepCopy(gameState.tubes),
+    moves: gameState.moves,
+    level: gameState.level
+  });
+  
+  // حفظ البيانات المحلية
+  saveUserData();
+  
+  updateUI();
+}
+
+function saveState(state) { 
+  gameHistory.push(JSON.stringify(state)); 
+}
+
+function undoGame() { 
+  if (gameHistory.length === 0) return null;
+  return gameHistory.pop(); 
+}
+
+function restartGame(initialState) { 
+  gameHistory = []; 
+  return initialState; 
+}
+
+function generateLevel(level) {
+  const baseColors = 3;
+  const maxColors = 8;
+  const colorCount = Math.min(baseColors + Math.floor(level / 2), maxColors);
+  const baseTubes = colorCount + 2;
+  const extraTubes = Math.floor(level / 3);
+  const tubeCount = Math.min(baseTubes + extraTubes, 12);
+  
+  const shuffledColors = shuffle([...COLORS]);
+  const levelColors = shuffledColors.slice(0, colorCount);
+  const liquids = [];
+  
+  for (let i = 0; i < colorCount; i++) {
+    for (let j = 0; j < 4; j++) {
+      liquids.push({
+        id: i,
+        color: levelColors[i],
+        hidden: Math.random() < 0.25,
+        revealed: false
+      });
+    }
+  }
+  
+  shuffle(liquids);
+  
+  let newDistribution = Array.from({length: tubeCount}, () => []);
+  let idx = 0;
+  
+  for (let t = 0; t < colorCount; t++) {
+    for (let k = 0; k < 4; k++) {
+      newDistribution[t].push(liquids[idx++]);
+    }
+  }
+  
+  for (let t = colorCount; t < tubeCount; t++) {
+    newDistribution[t] = [];
+  }
+  
+  gameState.tubes = newDistribution;
+  gameState.selectedTube = null;
+  gameState.history = [];
+  gameState.moves = 0;
+  
+  // إعادة تهيئة سجل الحركات الجديد
+  gameHistory = [];
+  saveHistory();
+}
+
+function render() {
+  gameArea.innerHTML = '';
+  
+  gameState.tubes.forEach((tube, i) => {
+    const tubeEl = document.createElement('div');
+    tubeEl.className = 'tube';
+    tubeEl.dataset.index = i;
+    
+    tube.forEach((liq, index) => {
+      const div = document.createElement('div');
+      div.className = 'liquid';
+      
+      const isHidden = liq.hidden && !liq.revealed && index < tube.length - 1;
+      
+      if (isHidden) {
+        div.style.backgroundColor = '#000';
+        div.textContent = '?';
+        div.classList.add('hidden-liquid');
+      } else {
+        div.style.backgroundColor = liq.color;
+        div.textContent = '';
+      }
+      
+      tubeEl.appendChild(div);
+    });
+    
+    for (let e = 0; e < 4 - tube.length; e++) {
+      const spacer = document.createElement('div');
+      spacer.className = 'liquid';
+      spacer.style.background = 'transparent';
+      spacer.style.opacity = '0.05';
+      tubeEl.appendChild(spacer);
+    }
+    
+    tubeEl.addEventListener('click', () => onTubeClick(i));
+    
+    if (i === gameState.selectedTube) {
+      tubeEl.classList.add('selected');
+    }
+    
+    gameArea.appendChild(tubeEl);
+  });
+  
+  updateUI();
+  
+  // التحقق من الفوز بعد كل حركة - نقطة واحدة فقط عند إكمال المستوى
+  if (checkWin()) {
+    winMsg.style.display = 'flex';
+    winStats.textContent = `🎉 لقد أكملت المستوى ${gameState.level} وحصلت على 1 نقطة!`;
+    
+    // إضافة نقطة واحدة عند إكمال المستوى - التحديث التلقائي (مرة واحدة فقط)
+    levelCompleted();
+    
+    recordGameProgress(1); // تسجيل تقدم اللعبة
+  }
+}
+
+async function onTubeClick(index) {
+  if (gameState.isAnimating) return;
+
+  const tube = gameState.tubes[index];
+
+  if (gameState.selectedTube === null) {
+    if (tube.length > 0) {
+      gameState.selectedTube = index;
+      render();
+    }
+  } else {
+    if (gameState.selectedTube === index) {
+      gameState.selectedTube = null;
+      render();
+      return;
+    }
+    
+    // الميزة الجديدة: إظهار لون السائل المخفي قبل النقل
+    const srcTube = gameState.tubes[gameState.selectedTube];
+    if (srcTube.length > 0) {
+      const topLiquid = srcTube[srcTube.length - 1];
+      if (topLiquid.hidden && !topLiquid.revealed) {
+        // كشف اللون المخفي قبل النقل
+        topLiquid.revealed = true;
+        render();
+        
+        // انتظر قليلاً لرؤية اللون قبل النقل
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    if (canPour(gameState.selectedTube, index)) {
+      performPour(gameState.selectedTube, index);
+    } else {
+      flashInvalid(index);
+      gameState.selectedTube = null;
+      render();
+    }
+  }
+}
+
+function canPour(src, dst) {
+  const A = gameState.tubes[src];
+  const B = gameState.tubes[dst];
+  
+  if (!A.length || B.length >= 4) return false;
+  
+  const topIdA = A[A.length - 1].id;
+  return B.length === 0 || topIdA === B[B.length - 1].id;
+}
+
+function countTopSame(tube) {
+  if (!tube.length) return 0;
+  
+  const topId = tube[tube.length - 1].id;
+  let c = 0;
+  
+  for (let i = tube.length - 1; i >= 0; i--) {
+    if (tube[i].id === topId) {
+      c++;
+    } else {
+      break;
+    }
+  }
+  
+  return c;
+}
+
+// ======== كشف السائل المخفي بعلامة استفهام ========
+function performPour(fromIdx, toIdx) {
+  saveHistory();
+  
+  const from = gameState.tubes[fromIdx];
+  const to = gameState.tubes[toIdx];
+  const topSame = countTopSame(from);
+  const canAccept = 4 - to.length;
+  const toMove = Math.min(topSame, canAccept);
+  const moved = [];
+  
+  for (let i = 0; i < toMove; i++) {
+    moved.push(from.pop());
+  }
+  
+  for (let i = moved.length - 1; i >= 0; i--) {
+    to.push(moved[i]);
+  }
+  
+  // ======== كشف السائل المخفي عند النقل ========
+  // لو السائل اللي تحت كان مخفي
+  if (from.length > 0) {
+    const nextLiquid = from[from.length - 1];
+    if (nextLiquid && nextLiquid.hidden && !nextLiquid.revealed) {
+      nextLiquid.revealed = true;
+      showNotification('✨ تم كشف لون السائل المجهول!', 'info');
+    }
+  }
+  
+  gameState.tubes.forEach(tube => {
+    if (tube.length > 0) {
+      const topLiquid = tube[tube.length - 1];
+      if (topLiquid.hidden && !topLiquid.revealed) {
+        topLiquid.revealed = true;
+      }
+    }
+  });
+  
+  gameState.moves++;
+  gameState.selectedTube = null;
+  render();
+}
+
+function flashInvalid(idx) {
+  const el = document.querySelector(`.tube[data-index="${idx}"]`);
+  if (!el) return;
+  
+  el.animate([
+    {transform: 'translateY(0)'},
+    {transform: 'translateY(-8px)'},
+    {transform: 'translateY(0)'}
+  ], {duration: 260});
+}
+
+function checkWin() {
+  return gameState.tubes.every(t => {
+    if (!t.length) return true;
+    if (t.length !== 4) return false;
+    const id0 = t[0].id;
+    return t.every(x => x.id === id0);
+  });
+}
+
+function updateUI() {
+  levelEl.textContent = gameState.level;
+  // عرض النقاط الحالية للمستخدم
+  pointsEl.textContent = currentUser ? currentUser.balance : 0;
+  undoBtn.disabled = gameState.history.length === 0 || gameState.isAnimating;
+}
+
+// ======== التحكم في اللعبة ========
+undoBtn.addEventListener('click', () => {
+  if (gameState.isAnimating) return;
+  
+  // استخدام الدالة الجديدة undoGame
+  const prevState = undoGame();
+  if (prevState) {
+    const state = JSON.parse(prevState);
+    gameState.tubes = state.tubes;
+    gameState.moves = state.moves;
+    gameState.level = state.level || gameState.level;
+  } else if (gameState.history.length > 0) {
+    // استخدام النظام القديم إذا لم يكن هناك سجل جديد
+    const prev = gameState.history.pop();
+    if (!prev) return;
+    
+    gameState.tubes = deepCopy(prev.tubes);
+    gameState.moves = prev.moves;
+  } else {
+    return;
+  }
+  
+  gameState.selectedTube = null;
+  render();
+  updateUI();
+});
+
+restartBtn.addEventListener('click', () => {
+  // استخدام الدالة الجديدة restartGame
+  restartGame({
+    tubes: [],
+    moves: 0,
+    level: gameState.level
+  });
+  
+  generateLevel(gameState.level);
+  render();
+});
+
+// ======== إصلاح مشكلة إضافة مستويين ========
+continueBtn.addEventListener('click', () => {
+  // إزالة زيادة المستوى من هنا لأنها تتم بالفعل في levelCompleted()
+  // فقط ننتقل للمستوى التالي
+  generateLevel(gameState.level);
+  winMsg.style.display = 'none';
+  render();
+  
+  // تحديث الواجهة
+  updateLevelAndPoints();
+});
+
+closeWin.addEventListener('click', () => {
+  winMsg.style.display = 'none';
+});
+
+// ======== نظام النقاط ========
+function updatePoints(p) {
+  // تحديث: إضافة نقطة واحدة فقط عند إكمال المستوى
+  if (dailyPoints + p <= MAX_DAILY_POINTS) {
+    dailyPoints += p;
+    // تحديث currentUser.balance بدلاً من dailyPoints فقط
+    if (currentUser) {
+      currentUser.balance += p;
+    }
+    updateUserPoints(p);
+  }
+}
+
+function updateUserPoints(p) {
+  if (!currentUser) return;
+  
+  // تحديث: إضافة نقطة واحدة فقط عند إكمال المستوى
+  // currentUser.balance تم تحديثه في updatePoints
+  gameProgress.balance = currentUser.balance;
+  currentUser.dailyPoints = dailyPoints;
+  gameProgress.totalPoints = dailyPoints;
+  
+  // حفظ البيانات المحلية
+  saveUserData();
+  
+  // تحديث العرض في شاشة السحب أول بأول
+  updateWithdrawalDisplay();
+  
+  // تحديث واجهة المستخدم في اللعبة
+  updateUI();
+}
+
+// تسجيل تقدم اللعبة
+function recordGameProgress(pointsEarned) {
+  if (!currentUser) return;
+  
+  // تحديث: إضافة نقطة واحدة فقط عند إكمال المستوى
+  // currentUser.balance تم تحديثه في updatePoints
+  gameProgress.balance = currentUser.balance;
+  
+  // تحديث العرض في شاشة السحب أول بأول
+  updateWithdrawalDisplay();
+  
+  // حفظ البيانات المحلية
+  saveUserData();
+}
+
+// ======== إظهار شاشة الإحالة المحسنة ========
+async function showReferralScreen() {
+  if (!checkInternet()) return;
+  
+  // إخفاء الشاشات الأخرى
+  mainScreen.classList.remove('active');
+  gameWrap.style.display = 'none';
+  
+  // عرض شاشة الإحالة
+  referralScreen.classList.add('active');
+  
+  // تحديث إحصائيات الإحالة أول بأول
+  updateReferralDisplay();
+}
+
+// ======== إظهار شاشة السحب المحسنة ========
+function showWithdrawalScreen() {
+  if (!checkInternet()) return;
+  
+  console.log("عرض شاشة السحب...");
+  
+  // إخفاء الشاشات الأخرى
+  mainScreen.classList.remove('active');
+  gameWrap.style.display = 'none';
+  referralScreen.classList.remove('active');
+  referralSystemScreen.classList.remove('active');
+  
+  // عرض شاشة السحب
+  withdrawalScreen.classList.add('active');
+  
+  // تحديث معلومات السحب أول بأول
+  updateWithdrawalDisplay();
+  
+  // تحميل حالة السحب
+  loadWithdrawalStatus();
+}
+
+// ======== تحديث واجهة المستخدم ========
+function updateGameUI() {
+  const user = loadUserLocal();
+  if (!user) return;
+
+  const pointsElement = document.getElementById("points-display");
+  const levelElement = document.getElementById("level-display");
+  const balanceElement = document.getElementById("balance-display");
+  const levelWithdraw = document.getElementById("withdraw-level-display");
+
+  if (pointsElement) pointsElement.textContent = user.points || 0;
+  if (levelElement) levelElement.textContent = "المستوى " + (user.level || 1);
+  if (balanceElement) balanceElement.textContent = user.balance || 0;
+  if (levelWithdraw) levelWithdraw.textContent = "المستوى الحالي: " + (user.level || 1);
+}
+
+// ========= المزامنة التلقائية عند تشغيل اللعبة =========
+window.addEventListener("load", async () => {
+  // التحقق من الاتصال بالإنترنت أولاً
+  if (!checkInternet()) {
+    return;
+  }
+  
+  let user = loadUserLocal();
+
+  if (user && user.email) {
+    const serverUser = await loadUserFromBaserow(user.email);
+
+    if (serverUser) {
+      if (new Date(serverUser.last_update) > new Date(user.last_update || 0)) {
+        saveUserLocal({
+          email: serverUser.user_email,
+          name: serverUser.username,
+          level: serverUser.level,
+          points: serverUser.points,
+          referrals: serverUser.referrals,
+          balance: serverUser.balance,
+          last_update: serverUser.last_update
+        });
+      } else {
+        saveUserToBaserow(user);
+      }
+    } else {
+      saveUserToBaserow(user);
+    }
+
+    updateGameUI();
+  } else {
+    // مستخدم جديد
+    const newUser = {
+      email: "guest_" + Date.now() + "@dobucks.local",
+      name: "ضيف",
+      level: 1,
+      points: 0,
+      referrals: 0,
+      balance: 0,
+      last_update: new Date().toISOString()
+    };
+    saveUserLocal(newUser);
+    saveUserToBaserow(newUser);
+    updateGameUI();
+  }
+  
+  // تحميل بيانات المستخدم
+  loadUserData();
+  loadGameProgress();
+  
+  // معالجة معلمة الإحالة في الرابط
+  handleReferralParameter();
+  
+  // تحديث واجهة المستخدم
+  updateUI();
+  updateLevelAndPoints(); // ← تم التغيير من updatePointsDisplay إلى updateLevelAndPoints
+  
+  // ✅ تحديث تلقائي كل دقيقة لمتابعة التغييرات في حالة السحب
+  setInterval(() => {
+    if (withdrawalScreen.classList.contains('active')) {
+      loadWithdrawalStatus(true);
+    }
+  }, 60000);
+});
+
+// ======== مراقبة تغيّر الاتصال أثناء اللعب ========
+window.addEventListener('offline', () => {
+  showNotification("⚠️ تم قطع الاتصال بالإنترنت. اللعبة لن تعمل الآن.", 'error');
+  showInternetError();
+});
+
+window.addEventListener('online', () => {
+  showNotification("✅ تم استعادة الاتصال بالإنترنت.", 'success');
+  hideInternetError();
+});
+
+// ======== إعادة المحاولة للاتصال بالإنترنت ========
+retryConnectionBtn.addEventListener('click', () => {
+  if (navigator.onLine) {
+    hideInternetError();
+    location.reload();
+  } else {
+    showNotification("❌ لا يزال الاتصال بالإنترنت مقطوعاً. يرجى التحقق من اتصالك.", 'error');
+  }
+});
+
+// ======== تهيئة اللعبة ========
+generateLevel(gameState.level);
+render();
+</script>
+</body>
+</html>
